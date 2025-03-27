@@ -1,4 +1,4 @@
-import time
+
 import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -47,26 +47,3 @@ class HomePage(BasePage):
             "Deaths": get_text(self.DEATHS),
         }
 
-    def get_line_chart_values(self):
-        """ Extract (X, Y) values from the line chart. """
-        wait = WebDriverWait(self.driver, 10)
-        try:
-
-            chart_container = self.driver.find_element(By.CLASS_NAME, "js-plotly-plot")
-            self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",chart_container)
-            time.sleep(2)
-
-            script = """
-            let chart = document.querySelector('.js-plotly-plot');
-            if (!chart || !Plotly || !chart.data) return [];
-            return chart.data.map(trace => ({x: trace.x, y: trace.y}));
-            """
-            chart_data = self.driver.execute_script(script)
-
-            extracted_points = [(x, y) for trace in chart_data for x, y in zip(trace["x"], trace["y"])]
-            for i, (x, y) in enumerate(extracted_points):
-                print(f"Point {i + 1}: X = {x}, Y = {y}")
-
-            return extracted_points if extracted_points else "No line chart data found"
-        except Exception as e:
-            return f"Error extracting line chart values: {str(e)}"
